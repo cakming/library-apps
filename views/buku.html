@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Master Buku</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="flex">
+        <div class="bg-gray-200 p-4 h-screen" style="width: 250px;">
+            <ul class="p-0 m-0 list-none">
+                <li><a href="/buku" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Buku</a></li>
+                <li><a href="/penulis" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Penulis</a></li>
+                <li><a href="/kategori" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Kategori</a></li>
+            </ul>
+        </div>
+        <div class="bg-gray-100 p-4 w-full">
+            <h1 class="font-bold text-md mb-4">Master Buku</h1>
+            <div class="flex justify-between items-center bg-white p-4 shadow rounded-lg mb-8">
+                <div>
+                    Cari berdasarkan:
+                    <select id="criteria" class="px-3 py-2 mx-2 rounded border outline-none">
+                        <option>-- Pilih Kriteria --</option>
+                        <option value="by-title">Judul Buku</option>
+                        <option value="by-author">Nama Penulis</option>
+                        <option value="by-category">Kategori</option>
+                    </select>
+                    <input id="keyword" class="px-3 py-2 rounded border outline-none mx-2" placeholder="Kata kunci" type="text" name="keyword">
+                    <button onclick="find()" class="px-3 py-2 rounded shadow outline-none bg-white text-green-500 border border-green-500 hover:text-white hover:bg-green-500" type="button">Cari</button>
+                </div>
+                <div>
+                    <a href="/buku/new" class="px-3 py-2 rounded shadow outline-none bg-green-500 text-white border border-green-500 hover:text-green-500 hover:bg-white">Buat Baru</a>
+                </div>
+            </div>
+            <div class="flex flex-wrap" id="target">
+
+            </div>
+        </div>
+    </div>
+    <script id="template" type="x-tmpl-mustache">
+    {{#data}}
+    <div class="bg-white shadow rounded-lg p-6 flex m-1" style="width:320px;">
+        <img class="mr-4 rounded-lg" style="width: 100px; height: fit-content;" src="{{url_sampul}}">
+        <div>
+            <h2 class="text-2xl font-bold">{{nama_buku}}</h2>
+            <h3 class="text-lg">Oleh: {{nama_penulis}}</h3>
+            <div>
+                <span class="text-gray-600 mr-2">Jumlah Halaman:</span><span>{{jumlah_halaman}}</span>
+            </div>
+            <div>
+                <span class="text-gray-600 mr-2">Tahun Terbit:</span><span>{{tahun_terbit}}</span>
+            </div>
+            <div class="mt-2">
+                <a href="/buku/edit/{{id}}" class="mr-4 px-3 py-2 rounded shadow outline-none bg-white text-green-500 border border-green-500 hover:text-white hover:bg-green-500">Edit</a><button onclick="deleteItem({{id}})" class="text-red-500 cursor-pointer">Delete</button>
+            </div>
+        </div>
+    </div>
+    {{/data}}
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript">
+        axios.get('/api/buku')
+        .then(function (response) {
+            const data = response.data;
+            console.log(document.getElementById('template'))
+            const template = document.getElementById('template').innerHTML;
+            // console.log(template)
+            const rendered = Mustache.render(template, {data: data});
+            document.getElementById('target').innerHTML = rendered;
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        function deleteItem (id) {
+            axios.delete('/api/buku/' + id)
+            .then(function (response) {
+                if (response.data.code === 0) {
+                    window.location.reload(false);
+                } else {
+                    console.log(response.data.message);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+
+        function find () {
+            console.log(document.getElementById('template'))
+            let criteria = document.getElementById('criteria').value;
+            let keyword = document.getElementById('keyword').value;
+            if (! criteria || criteria == '-- Pilih Kriteria --') return false;
+            if (! keyword) {
+                // reset
+                axios.get('/api/buku')
+                .then(function (response) {
+                    const data = response.data;
+                    console.log(document.getElementById('template'))
+                    const template = document.getElementById('template').innerHTML;
+                    // console.log(template)
+                    const rendered = Mustache.render(template, {data: data});
+                    document.getElementById('target').innerHTML = rendered;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            } else {
+                axios.get('/api/buku/' + criteria + '/' + keyword)
+                .then(function (response) {
+                    const data = response.data;
+                    console.log(document.getElementById('template'))
+                    const template = document.getElementById('template').innerHTML;
+                    // console.log(template)
+                    const rendered = Mustache.render(template, {data: data});
+                    document.getElementById('target').innerHTML = rendered;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Master Kategori</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="flex">
+        <div class="bg-gray-200 p-4 h-screen" style="width: 250px;">
+            <ul class="p-0 m-0 list-none">
+                <li><a href="/buku" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Buku</a></li>
+                <li><a href="/penulis" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Penulis</a></li>
+                <li><a href="/kategori" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Kategori</a></li>
+            </ul>
+        </div>
+        <div class="bg-gray-100 p-4 w-full">
+            <h1 class="font-bold text-md mb-4">Master Kategori</h1>
+            <div class="flex justify-end items-center bg-white p-4 shadow rounded-lg mb-8">
+                <div>
+                    <a href="/kategori/new" class="px-3 py-2 rounded shadow outline-none bg-green-500 text-white border border-green-500 hover:text-green-500 hover:bg-white">Buat Baru</a>
+                </div>
+            </div>
+            <div class="bg-white p-4 shadow rounded-lg">
+                <table id="the-table" class="table-auto pt-4">
+                    <thead>
+                        <tr>
+                            <th class="py-2 px-4 border border-gray-800 w-1/5">ID</th>
+                            <th class="py-2 px-4 border border-gray-800 w-1/2">Nama Kategori</th>
+                            <th class="py-2 px-4 border border-gray-800 w-1/2">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="target">
+                        <script id="template" type="x-tmpl-mustache">
+                        {{#data}}
+                            <tr>
+                                <td class="py-2 px-4 border border-gray-800">{{id}}</td>
+                                <td class="py-2 px-4 border border-gray-800">{{nama_kategori}}</td>
+                                <td class="py-2 px-4 border border-gray-800">
+                                    <a href="/kategori/edit/{{id}}" class="mr-4 hover:text-green-500 cursor-pointer">Edit</a><button onclick="deleteItem({{id}})" class="text-gray-600 hover:text-red-500 cursor-pointer">Delete</button>
+                                </td>
+                            </tr>
+                        {{/data}}
+                        </script>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js" integrity="sha512-894YE6QWD5I59HgZOGReFYm4dnWc1Qt5NtvYSaNcOP+u1T9qYdvdihz0PPSiiqn/+/3e7Jo4EaG7TubfWGUrMQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript">
+        axios.get('/api/kategori')
+        .then(function (response) {
+            const data = response.data;
+            var template = document.getElementById('template').innerHTML;
+            const rendered = Mustache.render(template, {data: data});
+            document.getElementById('target').innerHTML = rendered;
+
+            $(document).ready(function() {
+                $('#the-table').DataTable();
+            } );
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        function deleteItem (id) {
+            axios.delete('/api/kategori/' + id)
+            .then(function (response) {
+                if (response.data.code === 0) {
+                    window.location.reload(false);
+                } else {
+                    console.log(response.data.message);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+    </script>
+</body>
+</html>

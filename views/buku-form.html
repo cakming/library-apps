@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Master Buku</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="flex">
+        <div class="bg-gray-200 p-4 h-screen" style="width: 250px;">
+            <ul class="p-0 m-0 list-none">
+                <li><a href="/buku" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Buku</a></li>
+                <li><a href="/penulis" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Penulis</a></li>
+                <li><a href="/kategori" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Kategori</a></li>
+            </ul>
+        </div>
+        <div class="bg-gray-100 p-4 w-full">
+            <h1 class="font-bold text-md mb-4"><span class="text-gray-600">Master Buku</span> / <span id="breadcrumb"></span></h1>
+            <div class="bg-white p-4 shadow rounded-lg w-1/3">
+                <form id="form">
+                    <div class="flex flex-col my-2">
+                        <label class="text-xs font-bold">Nama Buku</label>
+                        <input id="name" type="text" class="px-3 py-2 rounded border outline-none" placeholder="Nama Buku">
+                    </div>
+                    <div class="flex flex-col my-2">
+                        <label class="text-xs font-bold">Kategori</label>
+                        <select id="kategori" class="px-3 py-2 rounded border outline-none">
+                            <option>-- Pilih Kategori --</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col my-2">
+                        <label class="text-xs font-bold">Penulis</label>
+                        <select id="penulis" class="px-3 py-2 rounded border outline-none">
+                            <option>-- Pilih Penulis --</option>
+                        </select>
+                    </div>
+                    <div class="flex flex-col my-2">
+                        <label class="text-xs font-bold">URL Sampul</label>
+                        <input id="url" type="text" class="px-3 py-2 rounded border outline-none" placeholder="URL Sampul">
+                    </div>
+                    <div class="flex flex-col my-2">
+                        <label class="text-xs font-bold">Jumlah Halaman</label>
+                        <input id="halaman" type="text" class="px-3 py-2 rounded border outline-none" placeholder="Jumlah Halaman">
+                    </div>
+                    <div class="flex flex-col my-2">
+                        <label class="text-xs font-bold">Tahun Terbit</label>
+                        <input id="tahun" type="text" class="px-3 py-2 rounded border outline-none" placeholder="Tahun Terbit">
+                    </div>
+                    <div>
+                        <button onclick="save()" type="button" class="px-3 py-2 rounded shadow outline-none bg-green-500 text-white border border-green-500 hover:text-green-500 hover:bg-white">Simpan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript">
+        var pathname = window.location.pathname;
+        var arr = pathname.split('/');
+
+        // fetch list penulis
+        axios.get('/api/penulis')
+        .then(function (response) {
+            if (response.data.length > 0) {
+                let penulisSelect = document.getElementById('penulis')
+                Object.keys(response.data).map((key) => penulisSelect.add(new Option(response.data[key].nama_penulis, response.data[key].id)));
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        // fetch list kategori
+        axios.get('/api/kategori')
+        .then(function (response) {
+            if (response.data.length > 0) {
+                let kategoriSelect = document.getElementById('kategori')
+                Object.keys(response.data).map((key) => kategoriSelect.add(new Option(response.data[key].nama_kategori, response.data[key].id)));
+            }
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        if (arr.length > 3) {
+            document.getElementById('breadcrumb').innerHTML = 'Edit';
+
+            axios.get('/api/buku/' + arr[3])
+            .then(function (response) {
+                if (response.data.length > 0) {
+                    document.getElementById('name').value = response.data[0].nama_buku;
+                    document.getElementById('tahun').value = response.data[0].tahun_terbit;
+                    document.getElementById('halaman').value = response.data[0].jumlah_halaman;
+                    document.getElementById('url').value = response.data[0].url_sampul;
+                    document.getElementById('penulis').value = response.data[0].penulis_id;
+                    document.getElementById('kategori').value = response.data[0].kategori_id;
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        } else {
+            document.getElementById('breadcrumb').innerHTML = 'Buat Baru';
+        }
+
+
+        function save(){
+            let name = document.getElementById('name').value;
+            let tahun = document.getElementById('tahun').value;
+            let url = document.getElementById('url').value;
+            let halaman = document.getElementById('halaman').value;
+            let penulis = document.getElementById('penulis').value;
+            let kategori = document.getElementById('kategori').value;
+
+            if (arr.length > 3) {
+                axios.put('/api/buku/' + arr[3], {
+                    nama_buku: name,
+                    penulis_id: penulis,
+                    kategori_id: kategori,
+                    tahun_terbit: tahun,
+                    url_sampul: url,
+                    jumlah_halaman: halaman
+                })
+                .then(function (response) {
+                    if (response.data.code === 0) {
+                        window.location = '/buku';
+                    } else {
+                        console.log(response.data.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            } else {
+                axios.post('/api/buku', {
+                    nama_buku: name,
+                    penulis_id: penulis,
+                    kategori_id: kategori,
+                    tahun_terbit: tahun,
+                    url_sampul: url,
+                    jumlah_halaman: halaman
+                })
+                .then(function (response) {
+                    if (response.data.code === 0) {
+                        window.location = '/buku';
+                    } else {
+                        console.log(response.data.message);
+                    }
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            }
+
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Master Penulis</title>
+    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="flex">
+        <div class="bg-gray-200 p-4 h-screen" style="width: 250px;">
+            <ul class="p-0 m-0 list-none">
+                <li><a href="/buku" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Buku</a></li>
+                <li><a href="/penulis" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Penulis</a></li>
+                <li><a href="/kategori" class="block py-2 px-4 w-full cursor-pointer hover:text-green-500">Master Kategori</a></li>
+            </ul>
+        </div>
+        <div class="bg-gray-100 p-4 w-full">
+
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js" integrity="sha512-bZS47S7sPOxkjU/4Bt0zrhEtWx0y0CRkhEp8IckzK+ltifIIE9EMIMTuT/mEzoIMewUINruDBIR/jJnbguonqQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript">
+        axios.get('/api/penulis')
+        .then(function (response) {
+            const data = response.data;
+            var template = document.getElementById('template').innerHTML;
+            const rendered = Mustache.render(template, {data: data});
+            document.getElementById('target').innerHTML = rendered;
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+
+        function deleteItem (id) {
+            axios.delete('/api/penulis/' + id)
+            .then(function (response) {
+                if (response.data.code === 0) {
+                    window.location.reload(false);
+                } else {
+                    console.log(response.data.message);
+                }
+            })
+            .catch(function (error) {
+                console.log(error);
+            });
+        }
+    </script>
+</body>
+</html>
